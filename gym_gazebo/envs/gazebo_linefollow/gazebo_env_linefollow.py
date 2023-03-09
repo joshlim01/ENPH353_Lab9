@@ -74,7 +74,100 @@ class Gazebo_Linefollow_Env(gazebo_env.GazeboEnv):
         #
         # You can use the self.timeout variable to keep track of which frames
         # have no line detected.
+        
+        # ORIGINAL IDEA:
+        # grayScale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # radius = 20
 
+        # ret, mask = cv2.threshold(grayScale,70,255,cv2.THRESH_BINARY_INV)
+        # strip = mask[-radius,:,]
+
+        # road = []
+
+        # for i in range(len(strip)):
+        #     if(strip[i] == 255):
+        #         road.append(i)
+
+        # if len(road) == 0:
+        #     center_x = None
+        # else:
+        #     road = np.array(road)
+        #     center_x = int(np.mean(road))
+        
+        # h, w, c = frame.shape
+        # center_y = h - radius
+
+        # image = np.copy(frame)
+
+        # cv2.circle(img=image, center = (center_x,center_y), radius = radius, color =(0,0,255), thickness=-1)
+
+        # cv2_imshow(image)
+        # out.write(image)
+
+        def detect_line(frame):
+            cv_image = frame
+            ## get frame and binary/mask
+            gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+            threshold = 200
+            _, img_bin = cv2.threshold(frame, threshold, 255, cv2.THRESH_BINARY)
+
+            ## line detection algorithm
+            ## essentially starting near the bottom and finding the middle black pixel 
+            ##  value for a row, then using those coordinates to draw a dot
+            min = -1
+            ycoord = 0
+
+            cv2.imshow("im", gray)
+            cv2.waitKey(1)
+            dots = []
+
+            for y in range(10):
+                if min != -1:
+                    ycoord = y
+                    break
+                for x in range(shape[1]):
+                    if (gray[shape[0]-y-1][x] < threshold):
+                        dots.append(x)
+                        if len(dots) >= 2:
+                            min = x
+            if len(dots) > 1:
+                avg = math.floor(np.median(dots))
+            else:
+                avg = 0
+            
+            # cv2.circle(cv_image, (avg, shape[0]-ycoord-10), 10, (0,0,0), 3)
+            # cv2.imshow("raw", cv_image)
+            # cv2.waitKey(1)
+
+            return avg
+
+        shape = np.shape(cv_image)
+        division = math.floor(shape[1]/10)
+
+        # partitions = []
+        # for i in range(10):
+        #     partitions.append(cv_image[math.floor(shape[0]*2/3):math.floor(shape[0]), i*division:(i+1)*division])
+        # weight = []
+        # for j in range(10):
+        #     partition_weight = 0
+        #     grayscale = cv2.cvtColor(partitions[j], cv2.COLOR_BGR2GRAY)
+        #     for k in range(len(grayscale)):
+        #         for l in range(len(grayscale[k])):
+        #             if grayscale[k][l] >= THRESHOLD:
+        #                 partition_weight += 1
+        #     weight.append(partition_weight)
+
+        output = detect_line(cv_image)
+
+        if output == 0:
+            self.timeout += 1
+        else: 
+            self.timeout = 0
+        if self.timeout >= 30:
+            done = True
+
+        state[int(math.floor(output/division))] = 1
+    
         return state, done
 
     def _seed(self, seed=None):

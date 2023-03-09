@@ -39,10 +39,11 @@ if __name__ == '__main__':
                            alpha=0.2, gamma=0.8, epsilon=0.9)
 
     # qlearn.loadQ("QValues_A+")
+    
 
     initial_epsilon = qlearn.epsilon
 
-    epsilon_discount = 0.99#0.9986
+    epsilon_discount = 0.99
 
     start_time = time.time()
     total_episodes = 10000
@@ -57,36 +58,37 @@ if __name__ == '__main__':
             qlearn.epsilon *= epsilon_discount
 
         observation = env.reset()
-        state = ','.join(map(str, observation))
-
         # render() #defined above, not env.render()
+
+        oldState = ''.join(map(str, observation))
 
         i = -1
         while True:
             i += 1
 
             # Pick an action based on the current state
-            action = qlearn.chooseAction(state)
+            action = qlearn.chooseAction(oldState)
             # Execute the action and get feedback
             observation, reward, done, info = env.step(action)
-            nextState = ','.join(map(str, observation))
 
-            qlearn.learn(state, action, reward, nextState)
+            nextState = ''.join(map(str, observation))
 
-            cumulated_reward += reward
+            qlearn.learn(oldState, action, reward, nextState)
 
             env._flush(force=True)
 
+            cumulated_reward += reward
+
+            if highest_reward < cumulated_reward:
+                highest_reward = cumulated_reward
+
             if not(done):
-                state = nextState
+                oldState = nextState
             else:
                 last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
                 break
 
         print("===== Completed episode {}".format(x))
-
-        if highest_reward < cumulated_reward:
-                highest_reward = cumulated_reward
 
         if (x > 0) and (x % 5 == 0):
             qlearn.saveQ("QValues")
