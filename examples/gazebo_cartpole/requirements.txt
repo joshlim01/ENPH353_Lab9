@@ -1,0 +1,11 @@
+atari-py==0.2.6
+gym==0.15.3
+numpy==1.23.1
+opencv-python==4.6.0.66
+tensorboard==2.9.1
+torch==1.5.1
+torchvision==0.6.1
+pytorch-ignite==0.2.1
+tensorboardX==1.9
+tensorflow==2.9.3
+

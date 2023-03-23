@@ -218,16 +218,7 @@ if __name__ == '__main__':
     # episodes in the top 30% and we train our NN on them.
     for iter_no, batch in enumerate(iterate_batches(env, net, BATCH_SIZE)):
         # Identify the episodes that are in the top PERCENTILE of the batch
-        
-        top_t = int(16 * 0.3) * -1
-        top_episodes_rewards = []
-        for episode in batch:
-            top_episodes_rewards.append(int(episode.reward))
-
-        top_episodes_rewards.sort()
-        top_episodes_rewards = top_episodes_rewards[top_t:]
-
-        obs_v, acts_v, reward_b, reward_m = filter_batch(batch, top_episodes_rewards[0]) #TODO identify the episode in top PERCENTILE
+        obs_v, acts_v, reward_b, reward_m = filter_batch(batch, 30) #TODO identify the episode in top PERCENTILE
 
         # Prepare for training the NN by zeroing the acumulated gradients.
         # TODO: zero gradients
